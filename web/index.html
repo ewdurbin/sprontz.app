@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sprontz</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="stylesheet" href="css/style.css?v=__BUILD_HASH__" />
+    <script
+      type="module"
+      src="https://unpkg.com/vanilla-colorful?module"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script
+      async
+      src="https://plausible.io/js/pa-UWa5Jb7_kzQfqySyfcuGR.js"
+    ></script>
+    <script>
+      ((window.plausible =
+        window.plausible ||
+        function () {
+          (plausible.q = plausible.q || []).push(arguments);
+        }),
+        (plausible.init =
+          plausible.init ||
+          function (i) {
+            plausible.o = i || {};
+          }));
+      plausible.init();
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <!-- Top bar -->
+      <div id="top-bar">
+        <div id="top-left">
+          <span id="status-dot"></span>
+          <span id="status-text">Disconnected</span>
+          <a
+            id="app-version"
+            href="https://github.com/ewdurbin/sprontz.app/commit/__BUILD_HASH__"
+            target="_blank"
+            >__BUILD_SHORT__
+            <span id="app-version-date">__BUILD_DATE__</span></a
+          >
+        </div>
+        <div id="top-right">
+          <button
+            id="theme-toggle-btn"
+            title="Toggle theme"
+            tabindex="-1"
+          ></button>
+          <button id="settings-gear-btn" title="Settings" tabindex="-1">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Race View -->
+      <div id="race-view">
+        <div id="dial-area">
+          <div class="logo-slot" id="logo-slot-0"></div>
+          <div class="logo-slot" id="logo-slot-1"></div>
+          <div id="race-dial">
+            <canvas id="dial-canvas" width="800" height="800"></canvas>
+            <div id="countdown" class="hidden"></div>
+          </div>
+          <div class="logo-slot" id="logo-slot-2"></div>
+          <div class="logo-slot" id="logo-slot-3"></div>
+        </div>
+        <div id="race-bottom">
+          <div id="racer-rows"></div>
+          <div id="start-stop-wrap">
+            <button id="start-stop-btn" class="disabled" tabindex="-1">
+              START
+            </button>
+            <span id="hold-hint">hold to stop</span>
+          </div>
+        </div>
+        <div id="race-timer">00:00.0</div>
+        <div id="credit">
+          With Love
+          <svg
+            id="heart-icon"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="#9b59b6"
+            stroke="none"
+          >
+            <path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
+          </svg>
+          From Philly<br /><a
+            href="https://durbin.ee"
+            target="_blank"
+            id="credit-link"
+            >Ee Durbin</a
+          >
+        </div>
+      </div>
+
+      <!-- Settings Modal -->
+      <div id="settings-modal" class="hidden">
+        <div class="settings-overlay"></div>
+        <div class="settings-panel">
+          <button id="settings-close">&times;</button>
+          <div id="settings-notice">
+            <span
+              >Settings and configuration are stored in your browser only.<br />Use
+              <strong>Export Configuration</strong> below to back up.</span
+            >
+            <button id="settings-notice-close">&times;</button>
+          </div>
+          <div class="settings-columns">
+            <div class="settings-col">
+              <h3>HARDWARE</h3>
+              <div class="setting-row">
+                <label>Roller Diameter (mm)</label>
+                <input
+                  type="number"
+                  id="roller-diameter"
+                  value="114.3"
+                  step="0.1"
+                />
+              </div>
+              <div class="setting-row">
+                <label>Number of Racers</label>
+                <div class="num-stepper">
+                  <button id="racers-minus">-</button>
+                  <span id="num-racers">2</span>
+                  <button id="racers-plus">+</button>
+                </div>
+              </div>
+              <div class="setting-row">
+                <label>Serial Port</label>
+                <button id="connect-serial-btn">Connect</button>
+                <div id="connection-status">Disconnected</div>
+                <button id="mock-mode-btn">Mock Mode</button>
+              </div>
+            </div>
+            <div class="settings-col">
+              <h3>RACE</h3>
+              <div class="setting-row">
+                <label>Race Type</label>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-race-type="distance">
+                    Distance
+                  </button>
+                  <button class="toggle-btn" data-race-type="time">Time</button>
+                </div>
+              </div>
+              <div class="setting-row" id="distance-setting">
+                <label>Distance (meters)</label>
+                <input type="number" id="race-distance" value="100" step="1" />
+              </div>
+              <div class="setting-row hidden" id="time-setting">
+                <label>Duration (seconds)</label>
+                <input type="number" id="race-time" value="60" step="1" />
+              </div>
+              <div class="setting-row">
+                <label>Speed Units</label>
+                <div class="toggle-group">
+                  <button class="toggle-btn active" data-unit="kph">KPH</button>
+                  <button class="toggle-btn" data-unit="mph">MPH</button>
+                </div>
+              </div>
+              <div class="setting-row">
+                <label>False Start Detection</label>
+                <button id="false-start-btn" class="toggle-btn">Off</button>
+              </div>
+            </div>
+          </div>
+          <h3 class="settings-section-header">COLORS</h3>
+          <div class="color-pickers">
+            <div class="color-pick">
+              <label>Racer 1</label>
+              <div class="color-swatch" id="swatch-racer-0"></div>
+              <div class="color-popup hidden" id="popup-racer-0">
+                <hex-color-picker id="color-racer-0"></hex-color-picker>
+                <div class="color-popup-footer">
+                  <input
+                    type="text"
+                    class="color-hex"
+                    id="hex-racer-0"
+                    maxlength="7"
+                    spellcheck="false"
+                  />
+                  <button
+                    class="color-eyedrop"
+                    id="eyedrop-racer-0"
+                    title="Pick from screen"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M2 22l1-1h3l9-9" />
+                      <path d="M3 21v-3l9-9" />
+                      <path d="M14.5 5.5l4-4a1.41 1.41 0 0 1 2 2l-4 4" />
+                      <path d="M12 8l4 4" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="color-pick">
+              <label>Racer 2</label>
+              <div class="color-swatch" id="swatch-racer-1"></div>
+              <div class="color-popup hidden" id="popup-racer-1">
+                <hex-color-picker id="color-racer-1"></hex-color-picker>
+                <div class="color-popup-footer">
+                  <input
+                    type="text"
+                    class="color-hex"
+                    id="hex-racer-1"
+                    maxlength="7"
+                    spellcheck="false"
+                  />
+                  <button
+                    class="color-eyedrop"
+                    id="eyedrop-racer-1"
+                    title="Pick from screen"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M2 22l1-1h3l9-9" />
+                      <path d="M3 21v-3l9-9" />
+                      <path d="M14.5 5.5l4-4a1.41 1.41 0 0 1 2 2l-4 4" />
+                      <path d="M12 8l4 4" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="color-pick">
+              <label>Racer 3</label>
+              <div class="color-swatch" id="swatch-racer-2"></div>
+              <div class="color-popup hidden" id="popup-racer-2">
+                <hex-color-picker id="color-racer-2"></hex-color-picker>
+                <div class="color-popup-footer">
+                  <input
+                    type="text"
+                    class="color-hex"
+                    id="hex-racer-2"
+                    maxlength="7"
+                    spellcheck="false"
+                  />
+                  <button
+                    class="color-eyedrop"
+                    id="eyedrop-racer-2"
+                    title="Pick from screen"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M2 22l1-1h3l9-9" />
+                      <path d="M3 21v-3l9-9" />
+                      <path d="M14.5 5.5l4-4a1.41 1.41 0 0 1 2 2l-4 4" />
+                      <path d="M12 8l4 4" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="color-pick">
+              <label>Racer 4</label>
+              <div class="color-swatch" id="swatch-racer-3"></div>
+              <div class="color-popup hidden" id="popup-racer-3">
+                <hex-color-picker id="color-racer-3"></hex-color-picker>
+                <div class="color-popup-footer">
+                  <input
+                    type="text"
+                    class="color-hex"
+                    id="hex-racer-3"
+                    maxlength="7"
+                    spellcheck="false"
+                  />
+                  <button
+                    class="color-eyedrop"
+                    id="eyedrop-racer-3"
+                    title="Pick from screen"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M2 22l1-1h3l9-9" />
+                      <path d="M3 21v-3l9-9" />
+                      <path d="M14.5 5.5l4-4a1.41 1.41 0 0 1 2 2l-4 4" />
+                      <path d="M12 8l4 4" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button id="reset-colors-btn">Reset Colors</button>
+          <h3 class="settings-section-header">LOGOS</h3>
+          <div class="logo-pickers">
+            <div class="logo-pick" id="logo-pick-0">
+              <div class="logo-preview" id="logo-preview-0"></div>
+              <div class="logo-actions">
+                <label class="logo-upload-label"
+                  >Top Left<input
+                    type="file"
+                    accept="image/*"
+                    id="logo-upload-0"
+                    hidden
+                /></label>
+                <button class="logo-clear hidden" id="logo-clear-0">
+                  &times;
+                </button>
+              </div>
+            </div>
+            <div class="logo-pick" id="logo-pick-1">
+              <div class="logo-preview" id="logo-preview-1"></div>
+              <div class="logo-actions">
+                <label class="logo-upload-label"
+                  >Top Right<input
+                    type="file"
+                    accept="image/*"
+                    id="logo-upload-1"
+                    hidden
+                /></label>
+                <button class="logo-clear hidden" id="logo-clear-1">
+                  &times;
+                </button>
+              </div>
+            </div>
+            <div class="logo-pick" id="logo-pick-2">
+              <div class="logo-preview" id="logo-preview-2"></div>
+              <div class="logo-actions">
+                <label class="logo-upload-label"
+                  >Bottom Left<input
+                    type="file"
+                    accept="image/*"
+                    id="logo-upload-2"
+                    hidden
+                /></label>
+                <button class="logo-clear hidden" id="logo-clear-2">
+                  &times;
+                </button>
+              </div>
+            </div>
+            <div class="logo-pick" id="logo-pick-3">
+              <div class="logo-preview" id="logo-preview-3"></div>
+              <div class="logo-actions">
+                <label class="logo-upload-label"
+                  >Bottom Right<input
+                    type="file"
+                    accept="image/*"
+                    id="logo-upload-3"
+                    hidden
+                /></label>
+                <button class="logo-clear hidden" id="logo-clear-3">
+                  &times;
+                </button>
+              </div>
+            </div>
+          </div>
+          <button id="reset-logos-btn">Reset Logos</button>
+          <div class="settings-footer">
+            <div class="settings-footer-cols">
+              <div class="settings-footer-col">
+                <button id="log-races-btn" class="toggle-btn">Off</button>
+                <button id="download-logs-btn">Download Race Logs</button>
+                <div id="log-summary"></div>
+                <button id="reset-logs-btn">Reset Race Log</button>
+              </div>
+              <div class="settings-footer-col">
+                <button id="export-config-btn">Export Configuration</button>
+                <label id="import-config-label">
+                  Import Configuration
+                  <input
+                    type="file"
+                    id="import-config-input"
+                    accept=".zip"
+                    hidden
+                  />
+                </label>
+                <button id="reset-config-btn">Reset Configuration</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reset config confirm -->
+          <div id="reset-config-modal" class="hidden">
+            <div class="confirm-overlay"></div>
+            <div class="confirm-panel">
+              <p>This will erase all settings, logos, and race logs.</p>
+              <p style="margin-top: 12px">
+                Type <strong>i understand</strong> to confirm:
+              </p>
+              <input
+                type="text"
+                id="reset-config-input"
+                autocomplete="off"
+                spellcheck="false"
+                style="
+                  margin-top: 12px;
+                  width: 100%;
+                  background: transparent;
+                  border: 1px solid var(--border);
+                  color: var(--text);
+                  font-family: inherit;
+                  font-size: 16px;
+                  padding: 8px 12px;
+                  border-radius: 4px;
+                  text-align: center;
+                  outline: none;
+                "
+              />
+              <div class="confirm-buttons" style="margin-top: 16px">
+                <button id="reset-config-cancel">Cancel</button>
+                <button id="reset-config-ok" disabled>Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirm Modal -->
+      <div id="confirm-modal" class="hidden">
+        <div class="confirm-overlay"></div>
+        <div class="confirm-panel">
+          <p id="confirm-message"></p>
+          <div class="confirm-buttons">
+            <button id="confirm-cancel">Cancel</button>
+            <button id="confirm-ok">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Winner Modal -->
+      <div id="winner-modal" class="hidden">
+        <button id="modal-close">&times;</button>
+        <div id="winner-label">WINNER</div>
+        <div id="winner-name"></div>
+        <div id="winner-stats"></div>
+        <table id="results-table"></table>
+      </div>
+    </div>
+
+    <script type="module" src="js/app.js?v=__BUILD_HASH__"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("sw.js").then(function (reg) {
+          reg.addEventListener("updatefound", function () {
+            var newSW = reg.installing;
+            newSW.addEventListener("statechange", function () {
+              if (
+                newSW.state === "activated" &&
+                navigator.serviceWorker.controller
+              ) {
+                var banner = document.createElement("div");
+                banner.id = "update-banner";
+                banner.innerHTML =
+                  'A new version is available. <button id="update-reload">Reload</button>';
+                document.getElementById("app").prepend(banner);
+                document
+                  .getElementById("update-reload")
+                  .addEventListener("click", function () {
+                    window.location.reload();
+                  });
+              }
+            });
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
