@@ -284,9 +284,14 @@ export class SerialReader {
       }
 
       case "FS": {
-        if (this.model.falseStartDetection) {
-          const racerIdx = parseInt(data);
+        const racerIdx = parseInt(data);
+        const validRacer = racerIdx >= 0 && racerIdx < this.model.numRacers;
+        if (validRacer) {
+          this.model.players[racerIdx].falseStart = true;
           console.warn("False start by racer", racerIdx);
+        }
+        if (validRacer && this.model.falseStartDetection) {
+          this.send("s\n");
           this.state.setRaceState(RACE_STATE.FALSE_START);
         }
         break;
@@ -313,6 +318,7 @@ export class SerialReader {
 
   async startRace() {
     this.model.resetPlayers();
+    this.model.raceLogged = false;
 
     if (this.model.raceType === RACE_TYPE.DISTANCE) {
       await this.send("d\n");
@@ -364,6 +370,7 @@ export class MockSerial {
 
   async startRace() {
     this.model.resetPlayers();
+    this.model.raceLogged = false;
     this.state.setRaceState(RACE_STATE.STARTING);
 
     // Simulate countdown

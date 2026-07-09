@@ -1,4 +1,35 @@
 const STORAGE_KEY = "sprontz-race-logs";
+const RACE_METADATA_HEADERS = [
+  "timestamp",
+  "event",
+  "race_type",
+  "race_length",
+];
+
+const racerHeaders = (racerCount) => [
+  ...RACE_METADATA_HEADERS,
+  ...Array.from({ length: racerCount }, (_, i) => {
+    const racer = `racer_${i + 1}`;
+    return [
+      `${racer}_name`,
+      `${racer}_ticks`,
+      `${racer}_time_ms`,
+      `${racer}_distance_m`,
+      `${racer}_top_mph`,
+      `${racer}_false_start`,
+    ];
+  }).flat(),
+];
+
+const maxLoggedRacers = (logs) => {
+  let maxRacers = 0;
+  for (const entry of logs) {
+    for (let i = 1; i <= 4; i++) {
+      if (`racer_${i}_name` in entry) maxRacers = i;
+    }
+  }
+  return maxRacers;
+};
 
 export class CsvLogger {
   constructor(model) {
@@ -28,6 +59,7 @@ export class CsvLogger {
         .getDistanceMeters(this.model.rollerCircumMm)
         .toFixed(2);
       fields[`racer_${i + 1}_top_mph`] = p.maxMph.toFixed(2);
+      fields[`racer_${i + 1}_false_start`] = p.falseStart;
     }
     fields.race_type = this.model.raceType === 0 ? "distance" : "time";
     fields.race_length =
@@ -40,13 +72,7 @@ export class CsvLogger {
   toCsv() {
     if (this.logs.length === 0) return "";
 
-    // Collect all unique keys across all entries
-    const allKeys = new Set();
-    for (const entry of this.logs) {
-      for (const key of Object.keys(entry)) allKeys.add(key);
-    }
-    const headers = Array.from(allKeys);
-
+    const headers = racerHeaders(maxLoggedRacers(this.logs));
     const rows = [headers.join(",")];
     for (const entry of this.logs) {
       const row = headers.map((h) => {

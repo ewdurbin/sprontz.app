@@ -99,11 +99,9 @@ class App {
       window.location.reload();
     });
     this.logSummaryEl = document.getElementById("log-summary");
-    this.state.on("raceFinished", () => {
-      if (this.model.logRaces) {
-        this.logger.logRaceFinish();
-        this.updateLogSummary();
-      }
+    this.state.on("raceFinished", () => this.logRaceOnce());
+    this.state.on("raceState", (raceState) => {
+      if (raceState === RACE_STATE.FALSE_START) this.logRaceOnce();
     });
 
     // Log races toggle
@@ -200,6 +198,13 @@ class App {
     } else {
       this.serial.tryReconnect();
     }
+  }
+
+  logRaceOnce() {
+    if (!this.model.logRaces || this.model.raceLogged) return;
+    this.logger.logRaceFinish();
+    this.model.raceLogged = true;
+    this.updateLogSummary();
   }
 
   initSerial(autoConnect = true) {

@@ -30,6 +30,7 @@ export class PlayerData {
     this.lastUpdateMs = 0;
     this.tickWindow = 0;
     this.timeWindow = 0;
+    this.falseStart = false;
   }
 
   updateRaceTicks(ticks, elapsedMs, rollerCircumMm) {
@@ -104,6 +105,7 @@ export class Model {
 
     this.hardwareConnected = false;
     this.elapsedRaceMs = 0;
+    this.raceLogged = false;
 
     this.loadSettings();
   }
